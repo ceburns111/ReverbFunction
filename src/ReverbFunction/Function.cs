@@ -31,8 +31,11 @@ public class Function
     /// </summary>
     /// <param name="request"></param>
     /// <returns>The API Gateway response.</returns>
-    public async Task<IEnumerable<GassyListing>> AddListings(ILambdaContext context) {
-        var reverbListingsUri = "https://reverb.com/api/listings?category=eurorack&product_type=keyboards-and-synths&page=1&per_page=24";
+    public async void AddListings(ReverbFunctionParameters functionParams, ILambdaContext context) {
+        var reverbListingsUri = functionParams.ReverbUri;
+        var authUri = functionParams.GassyAuthUri; 
+        var newUri = functionParams.GassyNewUri; 
+        
         var lastRun = DateTime.Now.AddMinutes(-30);
         IEnumerable<ReverbListing> newReverbListings = await GetNewReverbListings(lastRun, reverbListingsUri);
         
@@ -50,15 +53,11 @@ public class Function
 
             newGassyListings.Add(newGassyListing);
         }
-        var authToken = await GetGassyAuthToken("http://54.80.11.168/agent/authenticate");
+        var authToken = await GetGassyAuthToken(authUri);
 
-
-        var gassyNewUri = "http://54.80.11.168/listings/new";
         foreach(var listing in newGassyListings) {
-            AddListingToGassy(listing, gassyNewUri, authToken);
+            AddListingToGassy(listing, newUri, authToken);
         }
-
-        return newGassyListings; 
     }
 
     public async Task<IEnumerable<ReverbListing>> GetNewReverbListings(DateTime lastRun, string listingsUri) {

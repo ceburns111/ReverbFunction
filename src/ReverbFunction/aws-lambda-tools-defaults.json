@@ -7,6 +7,7 @@
   ],
   "profile": "",
   "region": "",
+  "function-runtime":"dotnet6",
   "configuration": "Release",
   "s3-prefix": "ReverbFunction/",
   "template": "serverless.template",
