@@ -1,8 +1,12 @@
 using Xunit;
 using ReverbFunction.Models; 
 using Amazon.Lambda.Core;
+using System;
 using Amazon.Lambda.TestUtilities;
 using Amazon.Lambda.APIGatewayEvents;
+using System.Text.Json;
+
+
 
 
 namespace ReverbFunction.Tests;
@@ -21,38 +25,34 @@ public class FunctionTest
             GassyNewUri =  "http://54.91.167.196/listings/new",
             GassyAuthUri = "http://54.91.167.196/agent/authenticate",
             ReverbUri = "https://reverb.com/api/listings?category=eurorack&product_type=keyboards-and-synths&page=1&per_page=24",
-            MinutesSinceLastRun = 30
+            MinutesSinceLastRun = 60
         };
 
         var context = new TestLambdaContext();
         Function function = new Function();
         var result = await function.AddListings(functionParams, context);
-        Console.WriteLine(result);
         Assert.NotEmpty(result);
     }
 
-    //  [Fact]
-    // public async void TestGetAuthToken()
-    // {
-    //     var function = new Function(); 
-    //     var token = await function.GetGassyAuthToken("http://54.80.11.168/agent/authenticate");
-    //     Console.WriteLine($"TOKEN --> {token}");
-    //     Assert.NotEqual(token, "");
-
-    //     // DateTime lastRun = DateTime.Now.AddMinutes(-30);
-    //     // // var reverbCategory = "keyboards-and-synths";
-    //     // // var reverbProductType = "eurorack";
-    //     // // var reverbListingsUri = "https://reverb.com/api/listings?category=eurorack&product_type=keyboards-and-synths&page=1&per_page=24";
-
-    //     // TestLambdaContext context;
-    //     // context = new TestLambdaContext();
-
-    //     // Function function = new Function();
-    //     // var listings = await function.AddListings(context);
-    //     // foreach(var listing in listings) {
-    //     //     Console.WriteLine(listing.Make);
-    //     // }
+    [Fact]
+    public async void TestNewListings() 
+    {
         
-    //     // Assert.Equal(true, true); 
-    // }
+        var reverbUri = "https://reverb.com/api/listings?category=eurorack&product_type=keyboards-and-synths&page=1&per_page=24";
+        var lastRun = DateTime.Now.AddMinutes(-30);        
+        var context = new TestLambdaContext();
+        Function function = new Function();
+        var listings = await function.GetNewReverbListings(lastRun, reverbUri);
+        foreach(var listing in listings) {
+            Console.WriteLine(JsonSerializer.Serialize(listing)); 
+            Console.WriteLine("...........................");
+            Console.WriteLine("...........................");
+            Console.WriteLine("...........................");
+            Console.WriteLine("...........................");
+        }
+
+        Assert.NotEmpty(listings);
+    }
+
+
 }
