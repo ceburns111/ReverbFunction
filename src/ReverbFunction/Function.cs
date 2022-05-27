@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text;
 using ReverbFunction.Models;
+using ReverbFunction.ReverbModels;
 using System.Net;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.APIGatewayEvents;
@@ -35,20 +36,21 @@ public class Function
         var reverbListingsUri = functionParams.ReverbUri;
         var authUri = functionParams.GassyAuthUri; 
         var newUri = functionParams.GassyNewUri; 
-        var lastRun = DateTime.Now.AddMinutes(functionParams.MinutesSinceLastRun < 0 ? functionParams.MinutesSinceLastRun : functionParams.MinutesSinceLastRun * -1); 
+        var lastRun = DateTime.Now.AddMinutes(functionParams.MinutesSinceLastRun * -1); 
 
-        IEnumerable<ReverbListing> newReverbListings = await GetNewReverbListings(lastRun, reverbListingsUri);
+        var newReverbListings = await GetNewReverbListings(lastRun, reverbListingsUri);
         
         var newGassyListings = new List<GassyListing>();
         foreach (var listing in newReverbListings) {
             var newGassyListing = new GassyListing {
-                SiteId = listing.id.ToString(),
+                SiteId = $"RV-{listing.id}",
                 Make = listing.make,
                 Model = listing.model,
-                Price = 0,
-                Shipping = 0,
-                ItemDescription = listing.description,
-                ItemCondition = "",
+                Price = listing.price.amount_cents,
+                Shipping = listing.shipping?.us_rate?.amount_cents ?? 0,
+                ItemDescription = listing.description ?? "",
+                ItemCondition = listing.condition_slug ?? "",
+                Link = listing._links.self.href
             };
 
             newGassyListings.Add(newGassyListing);
@@ -59,10 +61,10 @@ public class Function
             AddListingToGassy(listing, newUri, authToken);
         }
 
-        return "Huzzah";
+        return "1";
     }
 
-    public async Task<IEnumerable<ReverbListing>> GetNewReverbListings(DateTime lastRun, string listingsUri) {
+    public async Task<IEnumerable<Listing>> GetNewReverbListings(DateTime lastRun, string listingsUri) {
         var Client = new HttpClient();
         Client.DefaultRequestHeaders.Accept.Clear();
         Client.DefaultRequestHeaders.Accept.Add(
@@ -71,22 +73,22 @@ public class Function
         Client.DefaultRequestHeaders.Add("Accept-Version", "3.0");
 
         DateTime? maxPublishDate = null;
-        List<ReverbListing> listings = new();
+        List<Listing> newListings = new();
 
         //there has to be a better way to do this.... 
         do {Console.WriteLine($"Calling url: {listingsUri}");
 
             var streamTask = await Client.GetStreamAsync(listingsUri);
-            var response = JsonSerializer.Deserialize<ReverbResponse>(streamTask);
+            var response = JsonSerializer.Deserialize<Root>(streamTask);
 
-            if (listings != null && response != null) {
-                listings.AddRange(response.Listings);
+            if (newListings != null && response != null) {
+                newListings.AddRange(response.listings);
             }
 
-            maxPublishDate = listings?.Min(x => x.published_at);
-            listingsUri = response?.Links.NextPageLink.href ?? "";
+            maxPublishDate = newListings?.Min(x => x.published_at);
+            listingsUri = response?._links.next.href ?? "";
         } while (!string.IsNullOrEmpty(listingsUri) && maxPublishDate > lastRun);  
-        return listings; 
+        return newListings; 
     }
 
     public async Task<string> GetGassyAuthToken(string authUri) {
