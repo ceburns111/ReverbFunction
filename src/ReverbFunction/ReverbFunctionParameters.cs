@@ -7,5 +7,7 @@ namespace ReverbFunction
         public string GassyAuthUri { get; set; }
 
         public string ReverbUri { get; set; }
+
+        public int MinutesSinceLastRun { get; set; }
     }
 }

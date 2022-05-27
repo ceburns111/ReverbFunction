@@ -1,6 +1,0 @@
-{
-    "GassyNewUri": "http://54.80.11.168/listings/new",
-    "GassyAuthUri": "http://54.80.11.168/agent/authenticate",
-    "ReverbUri": "https://reverb.com/api/listings?category=eurorack&product_type=keyboards-and-synths&page=1&per_page=24"
-}
-

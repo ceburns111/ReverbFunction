@@ -31,12 +31,12 @@ public class Function
     /// </summary>
     /// <param name="request"></param>
     /// <returns>The API Gateway response.</returns>
-    public async void AddListings(ReverbFunctionParameters functionParams, ILambdaContext context) {
+    public async Task<string> AddListings(ReverbFunctionParameters functionParams, ILambdaContext context) {
         var reverbListingsUri = functionParams.ReverbUri;
         var authUri = functionParams.GassyAuthUri; 
         var newUri = functionParams.GassyNewUri; 
-        
-        var lastRun = DateTime.Now.AddMinutes(-30);
+        var lastRun = DateTime.Now.AddMinutes(functionParams.MinutesSinceLastRun < 0 ? functionParams.MinutesSinceLastRun : functionParams.MinutesSinceLastRun * -1); 
+
         IEnumerable<ReverbListing> newReverbListings = await GetNewReverbListings(lastRun, reverbListingsUri);
         
         var newGassyListings = new List<GassyListing>();
@@ -58,6 +58,8 @@ public class Function
         foreach(var listing in newGassyListings) {
             AddListingToGassy(listing, newUri, authToken);
         }
+
+        return "Huzzah";
     }
 
     public async Task<IEnumerable<ReverbListing>> GetNewReverbListings(DateTime lastRun, string listingsUri) {
