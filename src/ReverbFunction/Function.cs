@@ -6,8 +6,8 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text;
-using ReverbFunction.Models;
 using ReverbFunction.ReverbModels;
+using GassyFunctionHelpers.Models;
 using System.Net;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.APIGatewayEvents;
@@ -25,13 +25,7 @@ public class Function
     public Function() 
     {
     }
-
-
-    /// <summary>
-    /// A Lambda function to respond to HTTP Get methods from API Gateway
-    /// </summary>
-    /// <param name="request"></param>
-    /// <returns>The API Gateway response.</returns>
+    
     public async Task<string> AddListings(ReverbFunctionParameters functionParams, ILambdaContext context) {
         var reverbListingsUri = functionParams.ReverbUri;
         var authUri = functionParams.GassyAuthUri; 
@@ -40,14 +34,14 @@ public class Function
 
         var newReverbListings = await GetNewReverbListings(lastRun, reverbListingsUri);
         
-        var newGassyListings = new List<GassyListing>();
+        var newGassyListings = new List<ListingDto>();
         foreach (var listing in newReverbListings) {
-            var newGassyListing = new GassyListing {
-                SiteId = $"RV-{listing.id}",
+            var newGassyListing = new ListingDto {
+                ReverbId = listing.id,
                 Make = listing.make,
                 Model = listing.model,
                 Price = listing.price.amount_cents,
-                Shipping = listing.shipping?.us_rate?.amount_cents ?? 0,
+                //Shipping = listing.shipping?.us_rate?.amount_cents ?? 0,
                 ItemDescription = listing.description ?? "",
                 ItemCondition = listing.condition_slug ?? "",
                 Link = listing._links.self.href
@@ -120,7 +114,7 @@ public class Function
         return agentResponse.token;           
     }
 
-    public async Task<HttpResponseMessage> AddListingToGassy(GassyListing listing, string postUri, string token) {
+    public async Task<HttpResponseMessage> AddListingToGassy(ListingDto listing, string postUri, string token) {
         var Client = new HttpClient();
             Client.DefaultRequestHeaders.Accept.Clear();
             Client.DefaultRequestHeaders.Accept.Add(

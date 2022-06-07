@@ -6,9 +6,6 @@ using Amazon.Lambda.TestUtilities;
 using Amazon.Lambda.APIGatewayEvents;
 using System.Text.Json;
 
-
-
-
 namespace ReverbFunction.Tests;
 
 public class FunctionTest
