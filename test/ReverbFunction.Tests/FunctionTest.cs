@@ -1,5 +1,4 @@
 using Xunit;
-using ReverbFunction.Models; 
 using Amazon.Lambda.Core;
 using System;
 using Amazon.Lambda.TestUtilities;
@@ -15,24 +14,24 @@ public class FunctionTest
     }
 
     [Fact]
-    public async void TestAddListings() 
+    public async void TestDoWork() 
     {
         var functionParams = new ReverbFunctionParameters
         {
-            GassyNewUri =  "http://54.91.167.196/listings/new",
-            GassyAuthUri = "http://54.91.167.196/agent/authenticate",
+            GassyNewUri =  "http://localhost:5200/ReverbListings/New",
+            GassyAuthUri = "http://localhost:5200/agent/authenticate",
             ReverbUri = "https://reverb.com/api/listings?category=eurorack&product_type=keyboards-and-synths&page=1&per_page=24",
             MinutesSinceLastRun = 60
         };
 
         var context = new TestLambdaContext();
         Function function = new Function();
-        var result = await function.AddListings(functionParams, context);
+        var result = await function.DoWork(functionParams, context);
         Assert.NotEmpty(result);
     }
 
     [Fact]
-    public async void TestNewListings() 
+    public async void TestGetNewListings() 
     {
         
         var reverbUri = "https://reverb.com/api/listings?category=eurorack&product_type=keyboards-and-synths&page=1&per_page=24";
@@ -41,7 +40,9 @@ public class FunctionTest
         Function function = new Function();
         var listings = await function.GetNewReverbListings(lastRun, reverbUri);
         foreach(var listing in listings) {
-            Console.WriteLine(JsonSerializer.Serialize(listing)); 
+            Console.WriteLine(lastRun);
+            Console.WriteLine($"Published At: {listing.published_at}");
+            //Console.WriteLine(JsonSerializer.Serialize(listing)); 
             Console.WriteLine("...........................");
             Console.WriteLine("...........................");
             Console.WriteLine("...........................");
