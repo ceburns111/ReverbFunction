@@ -6,7 +6,7 @@
     "Get": {
       "Type": "AWS::Serverless::Function",
       "Properties": {
-        "Handler": "ReverbFunction::ReverbFunction.Function::AddListings",
+        "Handler": "ReverbFunction::ReverbFunction.Function::DoWork",
         "Runtime": "dotnet6",
         "CodeUri": ,
         "MemorySize": 256,
