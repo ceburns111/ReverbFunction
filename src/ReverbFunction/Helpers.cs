@@ -1,4 +1,5 @@
 using ReverbFunction.Models;
+using System;
 using ReverbFunction.ReverbModels;
 
 namespace ReverbFunction
@@ -15,7 +16,9 @@ namespace ReverbFunction
                 ItemDescription = listing.description ?? "",
                 ItemCondition = listing.condition_slug ?? "",
                 Link = listing._links.self.href,
-                
+                OffersEnabled = listing.offers_enabled,
+                ListingCreatedAt = listing.created_at ?? DateTime.Now,
+                ListingPublishedAt = listing.published_at ?? DateTime.Now
             };
         }
     }
