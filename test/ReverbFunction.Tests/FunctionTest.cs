@@ -33,14 +33,14 @@ public class FunctionTest
     }
 
     [Fact]
-    public async void TestGetNewListings() 
+    public async void TestGetNewEurorackListings() 
     {
         
         var reverbUri = "https://reverb.com/api/listings?category=eurorack&product_type=keyboards-and-synths&page=1&per_page=24";
         var lastRun = DateTime.Now.AddMinutes(-30);        
         var context = new TestLambdaContext();
         Function function = new Function();
-        var listings = await function.GetNewReverbListings(lastRun, reverbUri);
+        var listings = await function.GetNewEurorackListings(lastRun, reverbUri);
         foreach(var listing in listings) {
             Console.WriteLine(lastRun);
             Console.WriteLine(listing.make);

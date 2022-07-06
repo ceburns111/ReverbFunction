@@ -35,10 +35,24 @@ public class Function
          
         var lastRunDate = DateTime.Now.AddMinutes(functionParams.MinutesSinceLastRun * -1); 
      
-        var newReverbListings = await GetNewReverbListings(lastRunDate, reverbListingsUri);
+        var newEuroListings = await GetNewEurorackListings(lastRunDate, reverbListingsUri);
         var listingDtos = new List<ListingDto>();
-        foreach (var listing in newReverbListings) {
-            listingDtos.Add(Helpers.ConvertToListingDto(listing));
+        foreach (var euroListing in newEuroListings) {
+            var dto = new ListingDto {
+                SiteId = euroListing.id.ToString(),
+                Make = euroListing.make,
+                Model = euroListing.model,
+                Price = Convert.ToDecimal(euroListing.price?.amount_cents ?? 0),
+                Shipping = Convert.ToDecimal(0), //Convert.ToDecimal(listing.shipping?.us_rate.amount_cents ?? 0),
+                ItemDescription = euroListing.description,
+                ItemCondition = "", 
+                Category = Category.eurorack,
+                Link = euroListing._links.self.href,
+                OffersEnabled = euroListing.offers_enabled,
+                CreatedAt = euroListing.created_at,
+                UpdatedAt = euroListing.published_at
+            };
+            listingDtos.Add(dto);
         }
  
         var user = await Authenticate(authUri, userName, userPassword);
@@ -49,8 +63,18 @@ public class Function
         return "1";
     }
 
+    public Category GetProductCategory(string category) {
+        if (category == "eurorack") 
+            return Category.eurorack;
+        if (category == "pedals") 
+            return Category.pedals;
+        if (category == "analog-synths" | category == "digital-synths") 
+            return Category.synthesizers;
+        return Category.eurorack;
+    }
+
    
-    public async Task<IEnumerable<Listing>> GetNewReverbListings(DateTime lastRun, string listingsUri) {
+    public async Task<IEnumerable<Listing>> GetNewEurorackListings(DateTime lastRun, string listingsUri) {
         var Client = new HttpClient();
         Client.DefaultRequestHeaders.Accept.Clear();
         Client.DefaultRequestHeaders.Accept.Add(
