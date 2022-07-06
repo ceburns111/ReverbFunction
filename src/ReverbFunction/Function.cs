@@ -26,17 +26,7 @@ public class Function
     {
     }
     
-    public async Task<string> DoWork(ILambdaContext context) {
-         var functionParams = new ReverbFunctionParameters
-        {
-            GassyNewUri =  "http://localhost:5200/listings/new",
-            GassyAuthUri = "http://localhost:5200/users/authenticate",
-            ReverbUri = "https://reverb.com/api/listings?category=eurorack&product_type=keyboards-and-synths&page=1&per_page=24",
-            MinutesSinceLastRun = 60,
-            UserName = "ReverbAgent",
-            UserPassword = "password"
-        };
-        
+    public async Task<string> DoWork(ReverbFunctionParameters functionParams, ILambdaContext context) {
         string reverbListingsUri = functionParams.ReverbUri;
         string authUri = functionParams.GassyAuthUri; 
         string newUri = functionParams.GassyNewUri; 
