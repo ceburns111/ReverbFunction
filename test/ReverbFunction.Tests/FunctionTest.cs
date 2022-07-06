@@ -18,10 +18,12 @@ public class FunctionTest
     {
         var functionParams = new ReverbFunctionParameters
         {
-            GassyNewUri =  "http://localhost:5200/ReverbListings/New",
-            GassyAuthUri = "http://localhost:5200/agent/authenticate",
+            GassyNewUri =  "http://localhost:5200/listings/new",
+            GassyAuthUri = "http://localhost:5200/users/authenticate",
             ReverbUri = "https://reverb.com/api/listings?category=eurorack&product_type=keyboards-and-synths&page=1&per_page=24",
-            MinutesSinceLastRun = 60
+            MinutesSinceLastRun = 60,
+            UserName = "ReverbAgent",
+            UserPassword = "password"
         };
 
         var context = new TestLambdaContext();
@@ -41,6 +43,8 @@ public class FunctionTest
         var listings = await function.GetNewReverbListings(lastRun, reverbUri);
         foreach(var listing in listings) {
             Console.WriteLine(lastRun);
+            Console.WriteLine(listing.make);
+            Console.WriteLine(listing.model);
             Console.WriteLine($"Published At: {listing.published_at}");
             //Console.WriteLine(JsonSerializer.Serialize(listing)); 
             Console.WriteLine("...........................");

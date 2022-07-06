@@ -27,9 +27,12 @@ public class Function
     }
     
     public async Task<string> DoWork(ReverbFunctionParameters functionParams, ILambdaContext context) {
-        var reverbListingsUri = functionParams.ReverbUri;
-        var authUri = functionParams.GassyAuthUri; 
-        var newUri = functionParams.GassyNewUri; 
+        string reverbListingsUri = functionParams.ReverbUri;
+        string authUri = functionParams.GassyAuthUri; 
+        string newUri = functionParams.GassyNewUri; 
+        string userName = functionParams.UserName;
+        string userPassword = functionParams.UserPassword;
+         
         var lastRunDate = DateTime.Now.AddMinutes(functionParams.MinutesSinceLastRun * -1); 
      
         var newReverbListings = await GetNewReverbListings(lastRunDate, reverbListingsUri);
@@ -38,9 +41,9 @@ public class Function
             listingDtos.Add(Helpers.ConvertToListingDto(listing));
         }
  
-        var authToken = await GetGassyAuthToken(authUri);
+        var user = await Authenticate(authUri, userName, userPassword);
         foreach(var listing in listingDtos) {
-            await AddListingToGassy(listing, newUri, authToken);
+            await AddListingToGassy(listing, newUri, user.token);
         }
 
         return "1";
@@ -74,33 +77,33 @@ public class Function
         return newListings.Where(x => x.published_at > lastRun);
     }
 
-    public async Task<string> GetGassyAuthToken(string authUri) {
+    public async Task<UserResponse> Authenticate(string authUri, string userName, string userPassword) {
         var Client = new HttpClient();
         Client.DefaultRequestHeaders.Accept.Clear();
         Client.DefaultRequestHeaders.Accept.Add(
             new MediaTypeWithQualityHeaderValue("application/json")
             );
         
-        var agent = new Agent {
-            AgentName = "ReverbAgent",
-            AgentPassword = "password"
+        var user = new User {
+            UserName = userName,
+            UserPassword = userPassword,
         };
 
-        var agentJson = new StringContent(
-                JsonSerializer.Serialize(agent),
+        var userJson = new StringContent(
+                JsonSerializer.Serialize(user),
                 Encoding.UTF8,
                 System.Net.Mime.MediaTypeNames.Application.Json
             );
 
-        HttpResponseMessage authMessage = await Client.PostAsync(authUri, agentJson);
+        HttpResponseMessage authMessage = await Client.PostAsync(authUri, userJson);
         string messageContentStr = await authMessage.Content.ReadAsStringAsync();
-        var agentResponse = JsonSerializer.Deserialize<AgentResponse>(messageContentStr, new JsonSerializerOptions 
+        var response = JsonSerializer.Deserialize<UserResponse>(messageContentStr, new JsonSerializerOptions 
         {
             PropertyNameCaseInsensitive = true
         });
 
         //authMessage.EnsureSuccessStatusCode(); 
-        return agentResponse.token;           
+        return response;
     }
 
     public async Task<HttpResponseMessage> AddListingToGassy(ListingDto listing, string postUri, string token) {

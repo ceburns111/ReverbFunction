@@ -8,18 +8,19 @@ namespace ReverbFunction
     {
         public static ListingDto ConvertToListingDto(Listing listing){
             return new ListingDto {
-                ReverbId = listing.id,
+                SiteId = listing.id,
                 Make = listing.make,
                 Model = listing.model,
-                Price = listing.price.amount_cents,
-                //Shipping = listing.shipping?.us_rate?.amount_cents ?? 0,
-                ItemDescription = listing.description ?? "",
-                ItemCondition = listing.condition_slug ?? "",
+                Price = Convert.ToDecimal(listing.price?.amount_cents ?? 0),
+                Shipping = Convert.ToDecimal(0), //Convert.ToDecimal(listing.shipping?.us_rate?.amount_cents ?? 0),
+                ItemDescription = listing.description,
+                ItemCondition = "",//listing.condition_slug,
                 Link = listing._links.self.href,
                 OffersEnabled = listing.offers_enabled,
-                ListingCreatedAt = listing.created_at ?? DateTime.Now,
-                ListingPublishedAt = listing.published_at ?? DateTime.Now
+                CreatedAt = listing.created_at,
+                UpdatedAt = listing.published_at
             };
         }
     }
 }
+
