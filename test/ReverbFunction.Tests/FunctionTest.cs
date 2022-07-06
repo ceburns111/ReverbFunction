@@ -16,19 +16,19 @@ public class FunctionTest
     [Fact]
     public async void TestDoWork() 
     {
-        var functionParams = new ReverbFunctionParameters
-        {
-            GassyNewUri =  "http://localhost:5200/listings/new",
-            GassyAuthUri = "http://localhost:5200/users/authenticate",
-            ReverbUri = "https://reverb.com/api/listings?category=eurorack&product_type=keyboards-and-synths&page=1&per_page=24",
-            MinutesSinceLastRun = 60,
-            UserName = "ReverbAgent",
-            UserPassword = "password"
-        };
+        // var functionParams = new ReverbFunctionParameters
+        // {
+        //     GassyNewUri =  "http://localhost:5200/listings/new",
+        //     GassyAuthUri = "http://localhost:5200/users/authenticate",
+        //     ReverbUri = "https://reverb.com/api/listings?category=eurorack&product_type=keyboards-and-synths&page=1&per_page=24",
+        //     MinutesSinceLastRun = 60,
+        //     UserName = "ReverbAgent",
+        //     UserPassword = "password"
+        // };
 
         var context = new TestLambdaContext();
         Function function = new Function();
-        var result = await function.DoWork(functionParams, context);
+        var result = await function.DoWork(context);
         Assert.NotEmpty(result);
     }
 
