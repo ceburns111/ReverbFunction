@@ -9,5 +9,8 @@ namespace ReverbFunction
         public string ReverbUri { get; set; }
 
         public int MinutesSinceLastRun { get; set; }
+
+        public string UserName {get;set;}
+        public string UserPassword {get;set;}
     }
 }
